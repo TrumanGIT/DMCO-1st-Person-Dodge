@@ -305,4 +305,6 @@ namespace SimpleDodge
     inline float g_ShakeStrength = 1.0f;
     inline float g_ShakeDuration = 0.1f;
 
+    inline bool g_disableDodgeInThirdPerson = true;
+
 }

@@ -224,6 +224,19 @@ namespace SimpleDodge
             return;
         }
 
+        // 0/1 - Disable this dodge mod while in third person.
+        if (_stricmp(key.c_str(), "DisableDodgeInThirdPerson") == 0) {
+            long v = std::strtol(value.c_str(), nullptr, 10);
+            g_disableDodgeInThirdPerson = (v != 0);
+
+            spdlog::info(
+                "SimpleDodge: DisableDodgeInThirdPerson = {}",
+                g_disableDodgeInThirdPerson ? 1 : 0
+            );
+
+            return;
+        }
+
         // key assigned to dodge
         if (_stricmp(key.c_str(), "DodgeKey") == 0) {
             uint32_t v = 0;

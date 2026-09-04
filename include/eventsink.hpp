@@ -41,6 +41,8 @@ namespace eventsink
                 return RE::BSEventNotifyControl::kContinue;
             }
 
+         
+
             //DEBUG
             // Periodic debug print of current input state (~4 times per second)
             ///*
@@ -74,6 +76,15 @@ namespace eventsink
                 auto* button = input->AsButtonEvent();
                 if (!button) {
                     continue;
+                }
+
+                if (SimpleDodge::g_disableDodgeInThirdPerson) {
+                    auto* camera = RE::PlayerCamera::GetSingleton();
+
+                    if (camera && camera->IsInThirdPerson()) {
+                        // spdlog::info("[DODGE] Dodge blocked: player is in third person.");
+                        return RE::BSEventNotifyControl::kContinue;
+                    }
                 }
 
                 HandleButton(button);
@@ -133,9 +144,6 @@ namespace eventsink
         static constexpr RE::FormID kIsDodgingFormID = 0x000D62;
         static constexpr RE::FormID kDirFormID = 0x0012C7;
         //DEBUG .25 sec to console
-
-
-
 
         void DebugPrintInput()
         {
