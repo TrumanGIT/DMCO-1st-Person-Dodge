@@ -54,31 +54,32 @@ inline int GetSprintKey()
 
 static constexpr bool IsGamepadOffset(std::uint32_t v)
 {
-    return v >= SKSE::InputMap::kMacro_GamepadOffset && v < SKSE::InputMap::kMaxMacros;
+    return v >= 266 && v <= 281;  // SKSE::InputMap::kMacro_GamepadOffset .. kMaxMacros-1
 }
+
 
 // Converts a raw XInput bitmask-style value (0x0001, 0x1000, etc.) into a
 // CommonLib gamepad offset (266-281). Returns kMaxMacros if unrecognized.
-static std::uint32_t GamepadMaskToOffset(std::uint32_t mask)
+static std::uint32_t GamepadOffsetToMask(std::uint32_t offset)
 {
-    switch (mask) {
-    case 0x0001: return SKSE::InputMap::kGamepadButtonOffset_DPAD_UP;
-    case 0x0002: return SKSE::InputMap::kGamepadButtonOffset_DPAD_DOWN;
-    case 0x0004: return SKSE::InputMap::kGamepadButtonOffset_DPAD_LEFT;
-    case 0x0008: return SKSE::InputMap::kGamepadButtonOffset_DPAD_RIGHT;
-    case 0x0010: return SKSE::InputMap::kGamepadButtonOffset_START;
-    case 0x0020: return SKSE::InputMap::kGamepadButtonOffset_BACK;
-    case 0x0040: return SKSE::InputMap::kGamepadButtonOffset_LEFT_THUMB;
-    case 0x0080: return SKSE::InputMap::kGamepadButtonOffset_RIGHT_THUMB;
-    case 0x0100: return SKSE::InputMap::kGamepadButtonOffset_LEFT_SHOULDER;
-    case 0x0200: return SKSE::InputMap::kGamepadButtonOffset_RIGHT_SHOULDER;
-    case 0x1000: return SKSE::InputMap::kGamepadButtonOffset_A;
-    case 0x2000: return SKSE::InputMap::kGamepadButtonOffset_B;
-    case 0x4000: return SKSE::InputMap::kGamepadButtonOffset_X;
-    case 0x8000: return SKSE::InputMap::kGamepadButtonOffset_Y;
-    case 0x0009: return SKSE::InputMap::kGamepadButtonOffset_LT;
-    case 0x000A: return SKSE::InputMap::kGamepadButtonOffset_RT;
-    default:      return SKSE::InputMap::kMaxMacros;  // not a recognized mask
+    switch (offset) {
+    case 266: return 0x0001;  // Dpad Up
+    case 267: return 0x0002;  // Dpad Down
+    case 268: return 0x0004;  // Dpad Left
+    case 269: return 0x0008;  // Dpad Right
+    case 270: return 0x0010;  // Start
+    case 271: return 0x0020;  // Back/Select
+    case 272: return 0x0080;  // Left Stick Click  (matches your table: 272 = Left Stick)
+    case 273: return 0x0040;  // Right Stick Click (273 = Right Stick)
+    case 274: return 0x0100;  // Left Shoulder
+    case 275: return 0x0200;  // Right Shoulder
+    case 276: return 0x1000;  // A / Cross
+    case 277: return 0x2000;  // B / Circle
+    case 278: return 0x4000;  // X / Square
+    case 279: return 0x8000;  // Y / Triangle
+    case 280: return 0x0009;  // Left Trigger
+    case 281: return 0x000A;  // Right Trigger
+    default:   return 0;       // not a valid offset
     }
 }
 
@@ -209,7 +210,7 @@ inline void SyncDodgeKey()
     SimpleDodge::g_dodgeKey = static_cast<std::uint32_t>(dodgeKey);
 
     if (!IsGamepadOffset(SimpleDodge::g_dodgeKey)) {
-        std::uint32_t asOffset = GamepadMaskToOffset(SimpleDodge::g_dodgeKey);
+        std::uint32_t asOffset = GamepadOffsetToMask(SimpleDodge::g_dodgeKey);
         if (asOffset != SKSE::InputMap::kMaxMacros) {
             logger::info("uDodgeKey {} looked like an XInput mask; normalized to {}",
                 SimpleDodge::g_dodgeKey, asOffset);
