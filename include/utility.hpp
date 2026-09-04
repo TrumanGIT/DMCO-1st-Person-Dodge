@@ -52,6 +52,36 @@ inline int GetSprintKey()
     return -1;
 }
 
+static constexpr bool IsGamepadOffset(std::uint32_t v)
+{
+    return v >= SKSE::InputMap::kMacro_GamepadOffset && v < SKSE::InputMap::kMaxMacros;
+}
+
+// Converts a raw XInput bitmask-style value (0x0001, 0x1000, etc.) into a
+// CommonLib gamepad offset (266-281). Returns kMaxMacros if unrecognized.
+static std::uint32_t GamepadMaskToOffset(std::uint32_t mask)
+{
+    switch (mask) {
+    case 0x0001: return SKSE::InputMap::kGamepadButtonOffset_DPAD_UP;
+    case 0x0002: return SKSE::InputMap::kGamepadButtonOffset_DPAD_DOWN;
+    case 0x0004: return SKSE::InputMap::kGamepadButtonOffset_DPAD_LEFT;
+    case 0x0008: return SKSE::InputMap::kGamepadButtonOffset_DPAD_RIGHT;
+    case 0x0010: return SKSE::InputMap::kGamepadButtonOffset_START;
+    case 0x0020: return SKSE::InputMap::kGamepadButtonOffset_BACK;
+    case 0x0040: return SKSE::InputMap::kGamepadButtonOffset_LEFT_THUMB;
+    case 0x0080: return SKSE::InputMap::kGamepadButtonOffset_RIGHT_THUMB;
+    case 0x0100: return SKSE::InputMap::kGamepadButtonOffset_LEFT_SHOULDER;
+    case 0x0200: return SKSE::InputMap::kGamepadButtonOffset_RIGHT_SHOULDER;
+    case 0x1000: return SKSE::InputMap::kGamepadButtonOffset_A;
+    case 0x2000: return SKSE::InputMap::kGamepadButtonOffset_B;
+    case 0x4000: return SKSE::InputMap::kGamepadButtonOffset_X;
+    case 0x8000: return SKSE::InputMap::kGamepadButtonOffset_Y;
+    case 0x0009: return SKSE::InputMap::kGamepadButtonOffset_LT;
+    case 0x000A: return SKSE::InputMap::kGamepadButtonOffset_RT;
+    default:      return SKSE::InputMap::kMaxMacros;  // not a recognized mask
+    }
+}
+
 inline void SyncDodgeKey()
 {
     const auto root =
@@ -177,6 +207,15 @@ inline void SyncDodgeKey()
     // ---------------------------------------------------------
 
     SimpleDodge::g_dodgeKey = static_cast<std::uint32_t>(dodgeKey);
+
+    if (!IsGamepadOffset(SimpleDodge::g_dodgeKey)) {
+        std::uint32_t asOffset = GamepadMaskToOffset(SimpleDodge::g_dodgeKey);
+        if (asOffset != SKSE::InputMap::kMaxMacros) {
+            logger::info("uDodgeKey {} looked like an XInput mask; normalized to {}",
+                SimpleDodge::g_dodgeKey, asOffset);
+            SimpleDodge::g_dodgeKey = asOffset;
+        }
+    }
 
     SimpleDodge::g_tapDodgeOnRelease = (tapDodgeOnRelease != 0);
 

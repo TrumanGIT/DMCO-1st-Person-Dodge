@@ -41,11 +41,6 @@ namespace eventsink
                 return RE::BSEventNotifyControl::kContinue;
             }
 
-         
-
-            //DEBUG
-            // Periodic debug print of current input state (~4 times per second)
-            ///*
             {
                 const auto now = std::chrono::steady_clock::now();
                 if (now - lastDebugPrint >= kDebugInterval) {
@@ -53,8 +48,6 @@ namespace eventsink
                     //DebugPrintInput();
                 }
             }
-            //*/
-
 
             for (auto input = *a_events; input; input = input->next) {
 
@@ -106,6 +99,7 @@ namespace eventsink
         // Simple constants
         static constexpr std::uint32_t kForwardDodgeScanCode = 0x22;  // G
         static constexpr float kGamepadDeadzone = 0.02f;  // tweak if needed
+
 
 
         // PI for angle math
@@ -169,45 +163,6 @@ namespace eventsink
                 DirectionToString(dir)
             );
 
-            //Print direction:
-            //console->Print(buf);
-
-            /*
-            //print global variable IsDodging:
-            if (auto* data = RE::TESDataHandler::GetSingleton()) {
-                if (auto* form = data->LookupForm(kIsDodgingFormID, kDodgePlugin)) {
-                    if (auto* global = form->As<RE::TESGlobal>()) {
-                        if (auto* console = RE::ConsoleLog::GetSingleton()) {
-                            console->Print("Dodge_IsDodging = %.1f", global->value);
-                        }
-                    }
-                    else {
-                        if (auto* console = RE::ConsoleLog::GetSingleton()) {
-                            console->Print("ERROR: Form found but is not TESGlobal");
-                        }
-                    }
-                }
-                else {
-                    if (auto* console = RE::ConsoleLog::GetSingleton()) {
-                        console->Print("ERROR: Global not found (formID %06X)", kIsDodgingFormID);
-                    }
-                }
-            }
-            //
-
-            //Debug DodgeDir global
-            if (auto* data = RE::TESDataHandler::GetSingleton()) {
-                if (auto* form = data->LookupForm(kDirFormID, kDodgePlugin)) {
-                    if (auto* global = form->As<RE::TESGlobal>()) {
-                        if (auto* console = RE::ConsoleLog::GetSingleton()) {
-                            console->Print("Dodge_Direction = %.1f", global->value);
-                        }
-                    }
-                }
-            }
-            //
-            */
-
 
         }
 
@@ -248,6 +203,11 @@ namespace eventsink
             // Dodge hotkey: custom scancode (G by default).
             const auto scanCode = a_button->GetIDCode();
             if (scanCode == SimpleDodge::GetDodgeKey()) {
+
+                logger::info(
+                    "INPUT: IDCode={}, DodgeKey={}",
+                    scanCode,
+                    SimpleDodge::GetDodgeKey());
 
                 // Mode 1: normal behavior � dodge on press.
                 if (!SimpleDodge::IsTapDodgeEnabled()) {
@@ -310,11 +270,12 @@ namespace eventsink
 
             // If we're NOT already dodging, this is a normal dodge start:
             if (!st.active) {
-                const auto dir = ComputeDirection();
+                 auto dir = ComputeDirection();
 
-                // No movement input: no dodge.
+
                 if (dir == SimpleDodge::DodgeDirection::None) {
-                    return;
+                    dir = SimpleDodge::DodgeDirection::Back; 
+
                 }
 
                 SimpleDodge::SetLastInputDirection(dir);
